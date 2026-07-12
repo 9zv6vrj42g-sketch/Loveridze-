@@ -14,6 +14,6 @@ def content_kb() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="⌁ Threads", url=settings.THREADS_LINK)],
         [InlineKeyboardButton(text="⌁ X", url=settings.X_LINK)],
         [InlineKeyboardButton(text="⌁ 18+", url=settings.ADULT_LINK)],
-        [InlineKeyboardButton(text="↩️ Назад", callback_data="menu:main")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:main")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)

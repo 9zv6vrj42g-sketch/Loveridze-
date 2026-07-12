@@ -8,7 +8,7 @@ def raffle_active_kb(raffle_id: int) -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text="✅ Участвовать", callback_data=f"raffle:join:{raffle_id}"),
                 InlineKeyboardButton(text="📊 Статистика", callback_data="raffle:stats"),
             ],
-            [InlineKeyboardButton(text="↩️ Назад", callback_data="menu:main")],
+            [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:main")],
         ]
     )
 
@@ -17,7 +17,7 @@ def raffle_idle_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📊 Статистика", callback_data="raffle:stats")],
-            [InlineKeyboardButton(text="↩️ Назад", callback_data="menu:main")],
+            [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:main")],
         ]
     )
 
@@ -31,7 +31,7 @@ def raffle_stats_kb(current_number: int, prev_number: int | None, next_number: i
     rows = []
     if nav_row:
         rows.append(nav_row)
-    rows.append([InlineKeyboardButton(text="↩️ Назад в меню", callback_data="menu:raffle")])
+    rows.append([InlineKeyboardButton(text="◀️ Назад", callback_data="menu:raffle")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -53,6 +53,6 @@ def raffle_edit_fields_kb() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="Название", callback_data="raffleedit:title")],
             [InlineKeyboardButton(text="Количество победителей", callback_data="raffleedit:winners")],
             [InlineKeyboardButton(text="Время (часы)", callback_data="raffleedit:hours")],
-            [InlineKeyboardButton(text="↩️ Назад", callback_data="raffleadmin:back_to_preview")],
+            [InlineKeyboardButton(text="◀️ Назад", callback_data="raffleadmin:back_to_preview")],
         ]
     )

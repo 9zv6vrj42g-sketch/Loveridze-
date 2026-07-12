@@ -17,7 +17,7 @@ def suggest_media_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="↪️ Дальше", callback_data="suggest:next")],
-            [InlineKeyboardButton(text="↩️ Назад", callback_data="menu:suggest")],
+            [InlineKeyboardButton(text="↩️ Назад", callback_data="menu:main")],
         ]
     )
 
