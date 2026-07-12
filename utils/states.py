@@ -36,3 +36,7 @@ class NotSendStates(StatesGroup):
 
 class ModerationCommentStates(StatesGroup):
     waiting_comment = State()
+
+
+class ImageLibraryStates(StatesGroup):
+    collecting = State()
