@@ -277,7 +277,7 @@ async def get_actual_info() -> str:
     async with async_session() as session:
         result = await session.execute(select(ActualInfo).order_by(ActualInfo.id.desc()).limit(1))
         row = result.scalar_one_or_none()
-        return row.text if row else "ÐÐ¾ÐºÐ° Ð·Ð´ÐµÑÑ Ð¿ÑÑÑÐ¾."
+        return row.text if row else "Пока здесь пусто."
 
 
 async def set_actual_info(text: str) -> None:

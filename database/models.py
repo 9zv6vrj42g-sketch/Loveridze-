@@ -80,12 +80,12 @@ class RaffleParticipant(Base):
 
 
 class ActualInfo(Base):
-    """Singleton-style table: the current 'âï¸ÐÐºÑÑÐ°Ð»ÑÐ½Ð¾Ðµ' description."""
+    """Singleton-style table: the current '❗️Актуальное' description."""
 
     __tablename__ = "actual_info"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    text: Mapped[str] = mapped_column(Text, default="ÐÐ¾ÐºÐ° Ð·Ð´ÐµÑÑ Ð¿ÑÑÑÐ¾.")
+    text: Mapped[str] = mapped_column(Text, default="Пока здесь пусто.")
     updated_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
 
 
