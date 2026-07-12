@@ -1,6 +1,7 @@
 import datetime as dt
 
 from aiogram import F, Router
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -37,22 +38,18 @@ def _cooldown_remaining(last_at: dt.datetime | None) -> int | None:
     return max(1, int(remaining.total_seconds() // 60))
 
 
-@router.callback_query(F.data == "menu:suggest")
-async def suggest_intro(callback: CallbackQuery, state: FSMContext) -> None:
-    user = await get_or_create_user(
-        callback.from_user.id, callback.from_user.username, callback.from_user.full_name
-    )
+# The "Предложить" button was replaced by "🔦 Поделиться" in the main menu
+# (per product decision), but the submission flow itself is kept intact and
+# reachable via this command so nothing already built is lost.
+@router.message(Command("suggest"))
+async def suggest_intro_command(message: Message, state: FSMContext) -> None:
+    user = await get_or_create_user(message.from_user.id, message.from_user.username, message.from_user.full_name)
     remaining = _cooldown_remaining(user.last_suggestion_at)
     if remaining is not None:
-        await callback.message.edit_text(
-            SUGGEST_COOLDOWN_ACTIVE.format(minutes=remaining), reply_markup=back_kb()
-        )
-        await callback.answer()
+        await message.answer(SUGGEST_COOLDOWN_ACTIVE.format(minutes=remaining))
         return
-
     await state.clear()
-    await callback.message.edit_text(SUGGEST_INTRO, reply_markup=suggest_mode_kb())
-    await callback.answer()
+    await message.answer(SUGGEST_INTRO, reply_markup=suggest_mode_kb())
 
 
 @router.callback_query(F.data.startswith("suggest:mode:"))

@@ -19,6 +19,7 @@ from database.requests import (
 )
 from keyboards.menu import back_kb
 from keyboards.raffle import raffle_active_kb, raffle_idle_kb, raffle_stats_kb
+from utils.screens import render_screen
 from utils.states import RaffleJoinStates
 from utils.texts import RAFFLE_JOIN_PROMPT, RAFFLE_JOINED, RAFFLE_LAST_RESULTS_HEADER, RAFFLE_NOT_STARTED
 
@@ -44,19 +45,19 @@ async def show_raffle(callback: CallbackQuery) -> None:
     if active:
         participants = await count_participants(active.id)
         text = (
-            f"🔸 Розыгрыш\n\n"
+            f"💰 Розыгрыш\n\n"
             f"🟢 «{active.title}»\n"
             f"{active.description}\n\n"
             f"👥 Участников: {participants}\n"
             f"⏳ Осталось: {_format_time_left(active.ends_at)}"
         )
-        await callback.message.edit_text(text, reply_markup=raffle_active_kb(active.id))
+        await render_screen(callback.bot, callback.message.chat.id, text, raffle_active_kb(active.id))
     else:
         last = await get_last_raffle()
-        text = f"🔸 Розыгрыш\n\n{RAFFLE_NOT_STARTED}"
+        text = f"💰 Розыгрыш\n\n{RAFFLE_NOT_STARTED}"
         if last and last.status == "finished":
             text += f"\n\n{RAFFLE_LAST_RESULTS_HEADER}\n{last.result_message or '—'}"
-        await callback.message.edit_text(text, reply_markup=raffle_idle_kb())
+        await render_screen(callback.bot, callback.message.chat.id, text, raffle_idle_kb())
     await callback.answer()
 
 
@@ -68,7 +69,7 @@ async def raffle_join_start(callback: CallbackQuery, state: FSMContext) -> None:
         return
     await state.update_data(raffle_id=raffle_id)
     await state.set_state(RaffleJoinStates.waiting_proof)
-    await callback.message.answer(RAFFLE_JOIN_PROMPT, reply_markup=back_kb("menu:raffle"))
+    await render_screen(callback.bot, callback.message.chat.id, RAFFLE_JOIN_PROMPT, back_kb("menu:raffle"))
     await callback.answer()
 
 
@@ -78,7 +79,7 @@ async def raffle_join_proof(message: Message, state: FSMContext, bot) -> None:
     raffle_id = data.get("raffle_id")
     raffle = await get_raffle(raffle_id)
     if raffle is None or raffle.status != "active":
-        await message.answer("Этот розыгрыш уже недоступен.")
+        await render_screen(bot, message.chat.id, "Этот розыгрыш уже недоступен.", back_kb("menu:raffle"))
         await state.clear()
         return
 
@@ -87,21 +88,20 @@ async def raffle_join_proof(message: Message, state: FSMContext, bot) -> None:
     chance = round(100 * raffle.winners_count / max(participants, 1), 1)
 
     await state.clear()
-    await message.answer(
-        RAFFLE_JOINED.format(
-            number=raffle.number,
-            title=raffle.title,
-            description=raffle.description,
-            participants=participants,
-            chance=chance,
-            time_left=_format_time_left(raffle.ends_at),
-        )
+    joined_text = RAFFLE_JOINED.format(
+        number=raffle.number,
+        title=raffle.title,
+        description=raffle.description,
+        participants=participants,
+        chance=chance,
+        time_left=_format_time_left(raffle.ends_at),
     )
+    await render_screen(bot, message.chat.id, joined_text, back_kb("menu:raffle"))
 
     author = f"@{message.from_user.username}" if message.from_user.username else str(message.from_user.id)
     await bot.send_message(
         settings.MODERATOR_CHAT_ID,
-        f"🔸 Розыгрыш №{raffle.number}\nУчастник: {author}\nПруф: {message.text}",
+        f"💰 Розыгрыш №{raffle.number}\nУчастник: {author}\nПруф: {message.text}",
     )
 
 
@@ -110,7 +110,9 @@ async def raffle_stats(callback: CallbackQuery) -> None:
     total = await count_all_raffles()
     last = await get_last_raffle()
     if last is None:
-        await callback.message.edit_text("Розыгрышей еще не было.", reply_markup=back_kb("menu:raffle"))
+        await render_screen(
+            callback.bot, callback.message.chat.id, "Розыгрышей еще не было.", back_kb("menu:raffle")
+        )
         await callback.answer()
         return
     await _render_stats(callback, last.number, total)
@@ -133,7 +135,7 @@ async def _render_stats(callback: CallbackQuery, number: int, total: int) -> Non
 
     text = (
         f"📊 Статистика\n\n"
-        f"Всего проведено 🔸 {total}\n\n"
+        f"Всего проведено 💰 {total}\n\n"
         f"▫️ Розыгрыш №{raffle.number}\n"
         f"«{raffle.title}»\n"
         f"{raffle.description}\n\n"
@@ -143,5 +145,5 @@ async def _render_stats(callback: CallbackQuery, number: int, total: int) -> Non
     if raffle.result_message:
         text += f"\nРезультат:\n{raffle.result_message}"
 
-    await callback.message.edit_text(text, reply_markup=raffle_stats_kb(number, prev_n, next_n))
+    await render_screen(callback.bot, callback.message.chat.id, text, raffle_stats_kb(number, prev_n, next_n))
     await callback.answer()
