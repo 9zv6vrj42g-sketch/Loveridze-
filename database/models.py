@@ -31,6 +31,8 @@ class User(Base):
     mute_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     last_suggestion_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
     joined_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
+    last_message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    last_image_id: Mapped[str | None] = mapped_column(String(256), nullable=True)
 
 
 class Suggestion(Base):
@@ -97,3 +99,13 @@ class BroadcastLog(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     recipients_count: Mapped[int] = mapped_column(Integer, default=0)
     sent_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
+
+
+class ImageLibrary(Base):
+    """Square images (by Telegram file_id) used as the backdrop for every screen."""
+
+    __tablename__ = "image_library"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    file_id: Mapped[str] = mapped_column(String(256), unique=True)
+    added_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)

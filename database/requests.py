@@ -6,7 +6,7 @@ from sqlalchemy import func, select, update
 
 from config import settings
 from database.engine import async_session
-from database.models import ActualInfo, BroadcastLog, Raffle, RaffleParticipant, Suggestion, User
+from database.models import ActualInfo, BroadcastLog, ImageLibrary, Raffle, RaffleParticipant, Suggestion, User
 
 
 # ------------------------------------------------------------------ users --
@@ -300,3 +300,45 @@ async def get_last_broadcast_count() -> int:
         result = await session.execute(select(BroadcastLog).order_by(BroadcastLog.id.desc()).limit(1))
         row = result.scalar_one_or_none()
         return row.recipients_count if row else 0
+
+
+# ------------------------------------------------------------- last screen --
+async def update_last_shown(user_id: int, message_id: int | None, image_id: str | None) -> None:
+    async with async_session() as session:
+        await session.execute(
+            update(User).where(User.id == user_id).values(last_message_id=message_id, last_image_id=image_id)
+        )
+        await session.commit()
+
+
+# --------------------------------------------------------------- images ----
+async def add_image(file_id: str) -> bool:
+    """Returns False if this file_id is already in the library (duplicate)."""
+    async with async_session() as session:
+        exists = await session.execute(select(ImageLibrary).where(ImageLibrary.file_id == file_id))
+        if exists.scalar_one_or_none():
+            return False
+        session.add(ImageLibrary(file_id=file_id))
+        await session.commit()
+        return True
+
+
+async def count_images() -> int:
+    async with async_session() as session:
+        result = await session.execute(select(func.count()).select_from(ImageLibrary))
+        return result.scalar_one()
+
+
+async def get_random_image(exclude: str | None = None) -> str | None:
+    import random
+
+    async with async_session() as session:
+        result = await session.execute(select(ImageLibrary.file_id))
+        all_ids = [row[0] for row in result.all()]
+
+    if not all_ids:
+        return None
+    if exclude and len(all_ids) > 1:
+        candidates = [i for i in all_ids if i != exclude]
+        return random.choice(candidates) if candidates else all_ids[0]
+    return random.choice(all_ids)
