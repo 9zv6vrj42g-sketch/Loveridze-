@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     THREADS_LINK: str = ""
     X_LINK: str = ""
     ADULT_LINK: str = ""
+    STICKERPACK_LINK: str = "https://t.me/addstickers/Lavrelin"
 
     # --- Database ---
     DATABASE_URL: str = ""
