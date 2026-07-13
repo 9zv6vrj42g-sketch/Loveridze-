@@ -40,3 +40,14 @@ class ModerationCommentStates(StatesGroup):
 
 class ImageLibraryStates(StatesGroup):
     collecting = State()
+
+
+class AdminPanelStates(StatesGroup):
+    write_target = State()
+    write_text = State()
+    ban_target = State()
+    unban_target = State()
+    baninfo_target = State()
+    mute_target = State()
+    mute_minutes = State()
+    unmute_target = State()
