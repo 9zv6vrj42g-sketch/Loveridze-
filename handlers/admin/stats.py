@@ -1,6 +1,6 @@
 import datetime as dt
 
-from aiogram import Router
+from aiogram import Bot, Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
@@ -17,11 +17,7 @@ from database.requests import (
 router = Router(name="admin_stats")
 
 
-@router.message(Command("stats"))
-async def cmd_stats(message: Message, bot) -> None:
-    if message.from_user.id not in settings.admin_ids:
-        return
-
+async def build_stats_text(bot: Bot) -> str:
     now = dt.datetime.utcnow()
     bot_users = await count_users_total()
     day_diff = await count_users_since(now - dt.timedelta(days=1))
@@ -42,7 +38,7 @@ async def cmd_stats(message: Message, bot) -> None:
     except Exception:  # noqa: BLE001
         group_members = "—"
 
-    text = (
+    return (
         "📊 Статистика\n\n"
         f"▫️ Бот: {bot_users}\n"
         f"▫️ Канал: {channel_members}\n"
@@ -56,4 +52,10 @@ async def cmd_stats(message: Message, bot) -> None:
         f"🔔 Уведомления вкл: {notif_on}\n"
         f"🔕 Уведомления выкл: {notif_off}"
     )
-    await message.answer(text)
+
+
+@router.message(Command("stats"))
+async def cmd_stats(message: Message, bot: Bot) -> None:
+    if message.from_user.id not in settings.admin_ids:
+        return
+    await message.answer(await build_stats_text(bot))

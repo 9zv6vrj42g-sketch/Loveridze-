@@ -6,7 +6,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from config import settings
-from database.requests import find_user_by_username, get_user, set_ban, set_mute
+from database.requests import get_user, set_ban, set_mute
+from utils.admin_helpers import resolve_target
 from utils.states import ModerationCommentStates
 
 router = Router(name="admin_messaging")
@@ -14,16 +15,6 @@ router = Router(name="admin_messaging")
 
 def _admin_only(message: Message) -> bool:
     return message.from_user.id in settings.admin_ids
-
-
-async def _resolve_target(token: str) -> int | None:
-    token = token.strip()
-    if token.startswith("@"):
-        user = await find_user_by_username(token)
-        return user.id if user else None
-    if token.lstrip("-").isdigit():
-        return int(token)
-    return None
 
 
 # ------------------------------------------------------------------ /write --
@@ -39,7 +30,7 @@ async def cmd_write(message: Message, command: CommandObject, bot) -> None:
         await message.answer("Нужно указать текст сообщения.")
         return
     target_token, text = parts
-    target_id = await _resolve_target(target_token)
+    target_id = await resolve_target(target_token)
     if target_id is None:
         await message.answer("Пользователь не найден.")
         return
@@ -58,7 +49,7 @@ async def cmd_ban(message: Message, command: CommandObject, state: FSMContext) -
     if not command.args:
         await message.answer("Использование: /ban @username  или  /ban id")
         return
-    target_id = await _resolve_target(command.args.strip())
+    target_id = await resolve_target(command.args.strip())
     if target_id is None:
         await message.answer("Пользователь не найден.")
         return
@@ -75,7 +66,7 @@ async def cmd_unban(message: Message, command: CommandObject) -> None:
     if not command.args:
         await message.answer("Использование: /unban @username  или  /unban id")
         return
-    target_id = await _resolve_target(command.args.strip())
+    target_id = await resolve_target(command.args.strip())
     if target_id is None:
         await message.answer("Пользователь не найден.")
         return
@@ -90,7 +81,7 @@ async def cmd_baninfo(message: Message, command: CommandObject) -> None:
     if not command.args:
         await message.answer("Использование: /baninfo @username  или  /baninfo id")
         return
-    target_id = await _resolve_target(command.args.strip())
+    target_id = await resolve_target(command.args.strip())
     if target_id is None:
         await message.answer("Пользователь не найден.")
         return
@@ -112,7 +103,7 @@ async def cmd_mute(message: Message, command: CommandObject, state: FSMContext) 
     parts = command.args.split()
     target_token = parts[0]
     minutes = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 60
-    target_id = await _resolve_target(target_token)
+    target_id = await resolve_target(target_token)
     if target_id is None:
         await message.answer("Пользователь не найден.")
         return
@@ -132,7 +123,7 @@ async def cmd_unmute(message: Message, command: CommandObject) -> None:
     if not command.args:
         await message.answer("Использование: /unmute @username  или  /unmute id")
         return
-    target_id = await _resolve_target(command.args.strip())
+    target_id = await resolve_target(command.args.strip())
     if target_id is None:
         await message.answer("Пользователь не найден.")
         return
