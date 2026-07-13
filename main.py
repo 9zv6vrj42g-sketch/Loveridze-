@@ -7,7 +7,7 @@ from aiogram.enums import ParseMode
 
 from config import settings
 from database.engine import init_db
-from handlers.admin import actual_notsend, images, messaging, raffle_admin, stats
+from handlers.admin import actual_notsend, images, messaging, panel, raffle_admin, stats
 from handlers.user import actual, content, notifications, raffle, start, suggest
 from middlewares.access import AccessControlMiddleware, PrivateOnlyMiddleware
 from utils.scheduler import setup_scheduler
@@ -30,6 +30,7 @@ async def main() -> None:
     dp.include_router(raffle_admin.router)
     dp.include_router(actual_notsend.router)
     dp.include_router(images.router)
+    dp.include_router(panel.router)
 
     dp.include_router(start.router)
     dp.include_router(content.router)
