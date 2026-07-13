@@ -9,12 +9,12 @@ from config import settings
 from database.requests import create_suggestion, get_or_create_user, set_suggestion_mod_message, touch_suggestion_cooldown
 from keyboards.menu import back_kb
 from keyboards.suggest import (
-    mod_queue_kb,
     suggest_description_kb,
     suggest_media_kb,
     suggest_mode_kb,
     suggest_preview_kb,
 )
+from utils.screens import render_screen
 from utils.states import SuggestStates
 from utils.texts import (
     SUGGEST_COOLDOWN_ACTIVE,
@@ -38,18 +38,37 @@ def _cooldown_remaining(last_at: dt.datetime | None) -> int | None:
     return max(1, int(remaining.total_seconds() // 60))
 
 
-# The "Предложить" button was replaced by "🔦 Поделиться" in the main menu
-# (per product decision), but the submission flow itself is kept intact and
-# reachable via this command so nothing already built is lost.
+@router.callback_query(F.data == "menu:suggest")
+async def suggest_intro(callback: CallbackQuery, state: FSMContext) -> None:
+    user = await get_or_create_user(
+        callback.from_user.id, callback.from_user.username, callback.from_user.full_name
+    )
+    remaining = _cooldown_remaining(user.last_suggestion_at)
+    if remaining is not None:
+        await render_screen(
+            callback.bot,
+            callback.message.chat.id,
+            SUGGEST_COOLDOWN_ACTIVE.format(minutes=remaining),
+            back_kb(),
+        )
+        await callback.answer()
+        return
+
+    await state.clear()
+    await render_screen(callback.bot, callback.message.chat.id, SUGGEST_INTRO, suggest_mode_kb())
+    await callback.answer()
+
+
+# Kept as a convenience alias in case someone has the old habit/command.
 @router.message(Command("suggest"))
 async def suggest_intro_command(message: Message, state: FSMContext) -> None:
     user = await get_or_create_user(message.from_user.id, message.from_user.username, message.from_user.full_name)
     remaining = _cooldown_remaining(user.last_suggestion_at)
     if remaining is not None:
-        await message.answer(SUGGEST_COOLDOWN_ACTIVE.format(minutes=remaining))
+        await render_screen(message.bot, message.chat.id, SUGGEST_COOLDOWN_ACTIVE.format(minutes=remaining), back_kb())
         return
     await state.clear()
-    await message.answer(SUGGEST_INTRO, reply_markup=suggest_mode_kb())
+    await render_screen(message.bot, message.chat.id, SUGGEST_INTRO, suggest_mode_kb())
 
 
 @router.callback_query(F.data.startswith("suggest:mode:"))
@@ -146,31 +165,28 @@ async def suggest_submit(callback: CallbackQuery, state: FSMContext, bot) -> Non
 
     author_line = "Анонимно" if suggestion.is_anonymous else f"@{user.username or user.id}"
     mod_caption = (
-        f"🔹 Новое предложение #{suggestion.id}\n"
+        f"⭐️ Новое предложение #{suggestion.id}\n"
         f"Автор: {author_line}\n\n"
         f"{suggestion.description or ''}"
     )
     media_type, file_id = suggestion.media_type, suggestion.media_file_id
     if media_type == "photo":
-        sent = await bot.send_photo(
-            settings.MODERATOR_CHAT_ID, file_id, caption=mod_caption, reply_markup=mod_queue_kb(suggestion.id)
-        )
+        sent = await bot.send_photo(settings.MODERATOR_CHAT_ID, file_id, caption=mod_caption)
     elif media_type == "video":
-        sent = await bot.send_video(
-            settings.MODERATOR_CHAT_ID, file_id, caption=mod_caption, reply_markup=mod_queue_kb(suggestion.id)
-        )
+        sent = await bot.send_video(settings.MODERATOR_CHAT_ID, file_id, caption=mod_caption)
     elif media_type == "document":
-        sent = await bot.send_document(
-            settings.MODERATOR_CHAT_ID, file_id, caption=mod_caption, reply_markup=mod_queue_kb(suggestion.id)
-        )
+        sent = await bot.send_document(settings.MODERATOR_CHAT_ID, file_id, caption=mod_caption)
     else:
-        sent = await bot.send_message(
-            settings.MODERATOR_CHAT_ID, mod_caption, reply_markup=mod_queue_kb(suggestion.id)
-        )
+        sent = await bot.send_message(settings.MODERATOR_CHAT_ID, mod_caption)
 
     await set_suggestion_mod_message(suggestion.id, sent.message_id)
     await touch_suggestion_cooldown(user.id)
     await state.clear()
 
-    await callback.message.answer(SUGGEST_SENT.format(cooldown=settings.SUGGESTION_COOLDOWN_MINUTES))
+    await render_screen(
+        callback.bot,
+        callback.message.chat.id,
+        SUGGEST_SENT.format(cooldown=settings.SUGGESTION_COOLDOWN_MINUTES),
+        back_kb(),
+    )
     await callback.answer("Отправлено!")

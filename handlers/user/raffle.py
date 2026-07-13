@@ -45,7 +45,7 @@ async def show_raffle(callback: CallbackQuery) -> None:
     if active:
         participants = await count_participants(active.id)
         text = (
-            f"💰 Розыгрыш\n\n"
+            f"💵 Розыгрыш\n\n"
             f"🟢 «{active.title}»\n"
             f"{active.description}\n\n"
             f"👥 Участников: {participants}\n"
@@ -54,7 +54,7 @@ async def show_raffle(callback: CallbackQuery) -> None:
         await render_screen(callback.bot, callback.message.chat.id, text, raffle_active_kb(active.id))
     else:
         last = await get_last_raffle()
-        text = f"💰 Розыгрыш\n\n{RAFFLE_NOT_STARTED}"
+        text = f"💵 Розыгрыш\n\n{RAFFLE_NOT_STARTED}"
         if last and last.status == "finished":
             text += f"\n\n{RAFFLE_LAST_RESULTS_HEADER}\n{last.result_message or '—'}"
         await render_screen(callback.bot, callback.message.chat.id, text, raffle_idle_kb())
@@ -101,7 +101,7 @@ async def raffle_join_proof(message: Message, state: FSMContext, bot) -> None:
     author = f"@{message.from_user.username}" if message.from_user.username else str(message.from_user.id)
     await bot.send_message(
         settings.MODERATOR_CHAT_ID,
-        f"💰 Розыгрыш №{raffle.number}\nУчастник: {author}\nПруф: {message.text}",
+        f"💵 Розыгрыш №{raffle.number}\nУчастник: {author}\nПруф: {message.text}",
     )
 
 
@@ -135,7 +135,7 @@ async def _render_stats(callback: CallbackQuery, number: int, total: int) -> Non
 
     text = (
         f"📊 Статистика\n\n"
-        f"Всего проведено 💰 {total}\n\n"
+        f"Всего проведено 💵 {total}\n\n"
         f"▫️ Розыгрыш №{raffle.number}\n"
         f"«{raffle.title}»\n"
         f"{raffle.description}\n\n"
