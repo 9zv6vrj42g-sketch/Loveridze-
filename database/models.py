@@ -33,7 +33,6 @@ class User(Base):
     joined_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
     last_message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     last_image_id: Mapped[str | None] = mapped_column(String(256), nullable=True)
-    last_extra_message_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
 
 class Suggestion(Base):
@@ -103,11 +102,10 @@ class BroadcastLog(Base):
 
 
 class ImageLibrary(Base):
-    """Square photos AND stickers (by Telegram file_id) used as the backdrop for every screen."""
+    """Square images (by Telegram file_id) used as the backdrop for every screen."""
 
     __tablename__ = "image_library"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     file_id: Mapped[str] = mapped_column(String(256), unique=True)
-    media_type: Mapped[str] = mapped_column(String(16), default="photo")  # "photo" or "sticker"
     added_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)

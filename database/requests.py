@@ -303,73 +303,42 @@ async def get_last_broadcast_count() -> int:
 
 
 # ------------------------------------------------------------- last screen --
-async def update_last_shown(
-    user_id: int,
-    message_id: int | None,
-    image_id: str | None,
-    extra_message_id: int | None = None,
-) -> None:
+async def update_last_shown(user_id: int, message_id: int | None, image_id: str | None) -> None:
     async with async_session() as session:
         await session.execute(
-            update(User)
-            .where(User.id == user_id)
-            .values(last_message_id=message_id, last_image_id=image_id, last_extra_message_id=extra_message_id)
+            update(User).where(User.id == user_id).values(last_message_id=message_id, last_image_id=image_id)
         )
         await session.commit()
 
 
 # --------------------------------------------------------------- images ----
-async def add_image(file_id: str, media_type: str = "photo") -> bool:
+async def add_image(file_id: str) -> bool:
     """Returns False if this file_id is already in the library (duplicate)."""
     async with async_session() as session:
         exists = await session.execute(select(ImageLibrary).where(ImageLibrary.file_id == file_id))
         if exists.scalar_one_or_none():
             return False
-        session.add(ImageLibrary(file_id=file_id, media_type=media_type))
+        session.add(ImageLibrary(file_id=file_id))
         await session.commit()
         return True
 
 
-async def count_images(media_type: str | None = None) -> int:
+async def count_images() -> int:
     async with async_session() as session:
-        query = select(func.count()).select_from(ImageLibrary)
-        if media_type:
-            query = query.where(ImageLibrary.media_type == media_type)
-        result = await session.execute(query)
+        result = await session.execute(select(func.count()).select_from(ImageLibrary))
         return result.scalar_one()
 
 
-async def get_random_image(exclude: str | None = None) -> tuple[str, str] | None:
-    """Returns (file_id, media_type) — may be a photo or a sticker — or None if the library is empty."""
+async def get_random_image(exclude: str | None = None) -> str | None:
     import random
 
     async with async_session() as session:
-        result = await session.execute(select(ImageLibrary.file_id, ImageLibrary.media_type))
-        all_items = list(result.all())
+        result = await session.execute(select(ImageLibrary.file_id))
+        all_ids = [row[0] for row in result.all()]
 
-    if not all_items:
+    if not all_ids:
         return None
-    if exclude and len(all_items) > 1:
-        candidates = [item for item in all_items if item[0] != exclude]
-        chosen = random.choice(candidates) if candidates else all_items[0]
-    else:
-        chosen = random.choice(all_items)
-    return chosen[0], chosen[1]
-
-
-async def list_images(limit: int = 10, offset: int = 0) -> list[ImageLibrary]:
-    async with async_session() as session:
-        result = await session.execute(
-            select(ImageLibrary).order_by(ImageLibrary.id.desc()).limit(limit).offset(offset)
-        )
-        return list(result.scalars().all())
-
-
-async def delete_image(image_id: int) -> bool:
-    async with async_session() as session:
-        item = await session.get(ImageLibrary, image_id)
-        if item is None:
-            return False
-        await session.delete(item)
-        await session.commit()
-        return True
+    if exclude and len(all_ids) > 1:
+        candidates = [i for i in all_ids if i != exclude]
+        return random.choice(candidates) if candidates else all_ids[0]
+    return random.choice(all_ids)
