@@ -9,7 +9,7 @@ from utils.texts import NOTIFICATIONS_OFF, NOTIFICATIONS_ON, NOTIFICATIONS_TEXT
 router = Router(name="notifications")
 
 
-@router.callback_query(F.data == "raffle:notifications")
+@router.callback_query(F.data == "menu:notifications")
 async def show_notifications(callback: CallbackQuery) -> None:
     user = await get_or_create_user(
         callback.from_user.id, callback.from_user.username, callback.from_user.full_name

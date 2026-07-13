@@ -11,5 +11,5 @@ router = Router(name="actual")
 @router.callback_query(F.data == "menu:actual")
 async def show_actual(callback: CallbackQuery) -> None:
     text = await get_actual_info()
-    await render_screen(callback.bot, callback.message.chat.id, f"❗️ Актуальное\n\n{text}", back_kb())
+    await render_screen(callback.bot, callback.message.chat.id, f"🔥 Актуальное\n\n{text}", back_kb())
     await callback.answer()
