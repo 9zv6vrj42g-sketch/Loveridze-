@@ -15,6 +15,6 @@ def notifications_kb(current_on: bool) -> InlineKeyboardMarkup:
                 callback_data="notif:off",
             )
         ],
-        [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:raffle")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:main")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)

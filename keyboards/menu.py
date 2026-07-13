@@ -3,10 +3,11 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 def main_menu_kb() -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="❗️ Актуальное", callback_data="menu:actual")],
-        [InlineKeyboardButton(text="⭐️ Предложить", callback_data="menu:suggest")],
-        [InlineKeyboardButton(text="💵 Розыгрыш", callback_data="menu:raffle")],
-        [InlineKeyboardButton(text="⛓️ Ссылки", callback_data="menu:content")],
+        [InlineKeyboardButton(text="🔥 Актуальное", callback_data="menu:actual")],
+        [InlineKeyboardButton(text="🔔 Уведомления", callback_data="menu:notifications")],
+        [InlineKeyboardButton(text="🔦 Поделиться", callback_data="menu:share")],
+        [InlineKeyboardButton(text="💰 Розыгрыш", callback_data="menu:raffle")],
+        [InlineKeyboardButton(text="🔗 Ссылки", callback_data="menu:content")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 

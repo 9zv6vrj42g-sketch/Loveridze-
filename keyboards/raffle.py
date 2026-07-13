@@ -8,7 +8,6 @@ def raffle_active_kb(raffle_id: int) -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text="✅ Участвовать", callback_data=f"raffle:join:{raffle_id}"),
                 InlineKeyboardButton(text="📊 Статистика", callback_data="raffle:stats"),
             ],
-            [InlineKeyboardButton(text="🔔 Уведомления", callback_data="raffle:notifications")],
             [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:main")],
         ]
     )
@@ -18,7 +17,6 @@ def raffle_idle_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📊 Статистика", callback_data="raffle:stats")],
-            [InlineKeyboardButton(text="🔔 Уведомления", callback_data="raffle:notifications")],
             [InlineKeyboardButton(text="◀️ Назад", callback_data="menu:main")],
         ]
     )
