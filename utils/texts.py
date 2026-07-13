@@ -108,7 +108,7 @@ GREETINGS: list[str] = [
 
 MAIN_MENU_TEXT = "Выбери раздел ниже 👇"
 
-CONTENT_TEXT = "⛓️ Ссылки\n\nВыбери площадку:"
+CONTENT_TEXT = "🔗 Ссылки\n\nВыбери площадку:"
 
 SUGGEST_INTRO = (
     "🔹 Предложить\n\n"
